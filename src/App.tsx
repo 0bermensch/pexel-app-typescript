@@ -90,8 +90,9 @@ const App: FC = () =>  {
         <Masonry gutter={20}>
           {photos.map(photo => (
             <div key={photo.id} className='masonry-item' >
-              <a href="/#" onClick={e => {}}/>
+              <a href="/#" onClick={e => {}}>
               <img src={photo.src.large} alt="" onClick={(e) => imageClickHandler(e, photo)}/>
+              </a>
             </div>
           ))}
         </Masonry>
