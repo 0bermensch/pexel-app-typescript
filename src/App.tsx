@@ -5,6 +5,7 @@ import {useDispatch, useSelector} from 'react-redux'
 import {getPhotos, getCuratedPhotos, setError} from './store/actions/photosAction'
 import {RootState} from './store'
 import Masonry, {ResponsiveMasonry} from 'react-responsive-masonry'
+import {Photo} from 'pexels'
 
 const App: FC = () =>  {
   const dispatch = useDispatch()
