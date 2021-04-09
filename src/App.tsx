@@ -1,5 +1,6 @@
 import React, {FC, useEffect, useState, MouseEvent, Fragment} from 'react';
 import Intro from './components/Intro'
+import Modal from './components/Modal'
 import {useDispatch, useSelector} from 'react-redux'
 import {getPhotos, getCuratedPhotos, setError} from './store/actions/photosAction'
 import {RootState} from './store'
@@ -9,10 +10,20 @@ const App: FC = () =>  {
   const dispatch = useDispatch()
   const {photos, total_results, error} = useSelector((state: RootState) => state.photos);
   const [mode, setMode] = useState('trending');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchFor, setSearchFor] = useState('')
   const [page, setPage] = useState(1);
   const [title, setTitle] = useState('Tending')
+  const [btnLoading, setBtnLoading] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [src, setSrc] = useState('')
+  const [authorName, setAuthorName] = useState('')
+  const [authorUrl, setAuthorUrl] = useState('')
+
+
+  useEffect(() => {
+    dispatch(getCuratedPhotos(1, () => setLoading(false), () => setLoading(false)))
+  }, [dispatch])
 
   const searchPhotoHandler = (query: string) => {
     if(error) {
@@ -26,6 +37,38 @@ const App: FC = () =>  {
     setTitle(`Search results for "${query}"`)
   }
 
+  const loadMoreHandler = () => {
+    setBtnLoading(true)
+    setPage(perv => perv + 1)
+    if (mode === 'trending'){
+      dispatch(getCuratedPhotos(page + 1, () => setBtnLoading(false), () => setBtnLoading(false)))
+    } else {
+      dispatch(getPhotos(page + 1, searchFor, () => setBtnLoading(false), () => setBtnLoading(false)))
+    }
+  }
+
+  const showTrendingPhotos = () => {
+    setLoading(true)
+    setTitle('Trending')
+    setMode('trending')
+    dispatch(getCuratedPhotos(1, () => setLoading(false), () => setLoading(false)))
+  }
+
+  const modalCloseHandler = () => {
+    setSrc('')
+    setAuthorName('')
+    setAuthorUrl('')
+    setShowModal(false)
+  }
+
+  const imageClickHandler = (e: MouseEvent, photo: Photo) => {
+    e.preventDefault()
+    setSrc(photo.src.original)
+    setAuthorUrl(photo.photographer_url)
+    setAuthorName(photo.photographer)
+    setShowModal(true)
+  }
+
   let content = null
 
   if(loading){
@@ -36,14 +79,18 @@ const App: FC = () =>  {
     content = (
       error
       ? <div className='notification is-danger mt-6 has-text-centered'>{error}</div> : 
-      <><h2 className="is-size-1 has-text-centered py-6">{title}</h2>
+      <>
+      {mode === 'search' && <div className='is-flex is-justify-content-center pt-5'>
+        <button className="button is-link" onClick={showTrendingPhotos}>Back to trending</button>
+        </div>}
+      <h2 className="is-size-1 has-text-centered py-6">{title}</h2>
       {photos.length> 0
       ? <ResponsiveMasonry columnsCountBreakPoints={{480: 2, 900: 5}}>
         <Masonry gutter={20}>
           {photos.map(photo => (
             <div key={photo.id} className='masonry-item' >
               <a href="/#" onClick={e => {}}/>
-              <img src={photo.src.large} alt=""/>
+              <img src={photo.src.large} alt="" onClick={(e) => imageClickHandler(e, photo)}/>
             </div>
           ))}
         </Masonry>
@@ -51,8 +98,9 @@ const App: FC = () =>  {
       : <p className='has-text-centered'>No results</p>
       }
       <div className="is-flex is-justify-content-center py-6">
-        {((total_results > page * 10) || mode=== 'trending') && <button className='button is-primary is-large'>
-          Load more</button>}
+        {((total_results > page * 10) || mode=== 'trending') 
+        && <button className='button is-primary is-large' onClick={loadMoreHandler} disabled={btnLoading} >
+          {!btnLoading ? 'Load more' : <div className='loading loading--small'></div>}</button>}
       </div>
       </>
     )
@@ -65,6 +113,7 @@ const App: FC = () =>  {
       <div className="container px-4">
         {content}
       </div>
+      {showModal && <Modal src={src} onClose={modalCloseHandler} authorName={authorName} authorUrl={authorUrl}/> }
     </div>
   );
 }
