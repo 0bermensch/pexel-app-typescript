@@ -1,5 +1,4 @@
-import {createClient, PhotosWithTotalResults, ErrorResponse, Photos, Photo} from 'pexels'
-import { isPhotos } from 'pexels/dist/typeCheckers';
+import {createClient, PhotosWithTotalResults, ErrorResponse, Photos, } from 'pexels'
 import {ThunkAction} from 'redux-thunk'
 
 import {RootState} from '../';

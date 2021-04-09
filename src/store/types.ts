@@ -1,6 +1,4 @@
 import {Photo} from 'pexels';
-import { TypeOfTag } from 'typescript';
-
 export const GET_PHOTOS = 'GET_PHOTOS';
 export const SET_ERROR = 'SET_ERROR';
 
